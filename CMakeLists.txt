@@ -12,6 +12,10 @@ cmake_minimum_required(VERSION 3.0)
 # locations on all platforms.
 include(GNUInstallDirs)
 
+# Options
+option(LIBFUZZER_INSTRUMENT "Force usage of clang compiler and instrument library for LibFuzzer" OFF)
+option(BUILD_FUZZER "Build fuzzer" OFF)
+
 set(LIBHDRS
   src/valgrind/fy-valgrind.h
   src/xxhash/xxhash.h
@@ -70,6 +74,12 @@ add_library(${PROJECT_NAME}
 )
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+# Optionally instrument library
+if(LIBFUZZER_INSTRUMENT)
+    target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=fuzzer-no-link)
+    target_link_options(${PROJECT_NAME} PUBLIC -fsanitize=fuzzer-no-link)
+endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Libraries")
 
@@ -150,3 +160,9 @@ install(
         ${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}-config-version.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
+
+# Optionally build fuzzer
+if (BUILD_FUZZER)
+    message(STATUS "Building fuzzer...")
+    add_subdirectory(fuzz)
+endif()

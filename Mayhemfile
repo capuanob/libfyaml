@@ -1,0 +1,9 @@
+image: ghcr.io/capuanob/libyuarel-fuzz:latest
+project: libyuarel
+target: libyuarel-fuzz
+tests:
+  - file://fuzz/corpus
+
+cmds:
+  - cmd: /yuarel-fuzz -close_fd_mask=2
+    libfuzzer: true
